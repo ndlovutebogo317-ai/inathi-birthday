@@ -1,0 +1,310 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>For Inathi 🍍</title>
+
+<script src="https://unpkg.com/react@18/umd/react.development.js"></script>
+<script src="https://unpkg.com/react-dom@18/umd/react-dom.development.js"></script>
+<script src="https://unpkg.com/@babel/standalone/babel.min.js"></script>
+
+<style>
+body {
+  margin:0;
+  font-family:sans-serif;
+  background:linear-gradient(135deg,#0a0f1c,#1e3a5f);
+  color:white;
+  text-align:center;
+}
+
+.container {
+  display:flex;
+  align-items:center;
+  justify-content:space-between;
+  height:100vh;
+}
+
+.side {
+  width:30%;
+  height:100%;
+  object-fit:cover;
+}
+
+.center { width:40%; }
+
+.envelope {
+  background:white;
+  color:black;
+  padding:20px;
+  margin:20px;
+  border-radius:10px;
+  cursor:pointer;
+  transition:.3s;
+}
+
+.shake { animation:shake .4s; }
+
+@keyframes shake {
+  0%{transform:translateX(0)}
+  25%{transform:translateX(-5px)}
+  50%{transform:translateX(5px)}
+  75%{transform:translateX(-5px)}
+  100%{transform:translateX(0)}
+}
+
+.open {
+  animation:openEnv 1s forwards;
+}
+
+@keyframes openEnv {
+  0%{transform:scale(1)}
+  100%{transform:scale(1.2) rotateX(180deg);opacity:0}
+}
+
+button {
+  margin:10px;
+  padding:10px 20px;
+  border:none;
+  background:#3b82f6;
+  color:white;
+  border-radius:5px;
+  cursor:pointer;
+}
+
+.reveal {
+  position:fixed;
+  width:100%;
+  height:100%;
+  background:black;
+  display:flex;
+  justify-content:center;
+  align-items:center;
+  animation:fadeIn 2s;
+}
+
+@keyframes fadeIn {
+  from{opacity:0} to{opacity:1}
+}
+
+.grid {
+  display:grid;
+  grid-template-columns:repeat(auto-fit,minmax(200px,1fr));
+  gap:10px;
+  padding:20px;
+}
+
+.grid img {
+  width:100%;
+  border-radius:10px;
+  transition:.3s;
+}
+
+.grid img:hover { transform:scale(1.05); }
+
+/* heart game */
+.heart {
+  position:absolute;
+  font-size:30px;
+  cursor:pointer;
+}
+
+/* pineapple game */
+.pine {
+  position:absolute;
+  font-size:30px;
+}
+
+.bucket {
+  position:fixed;
+  bottom:10px;
+  left:50%;
+  transform:translateX(-50%);
+  font-size:40px;
+}
+</style>
+</head>
+
+<body>
+<div id="root"></div>
+
+<script type="text/babel">
+
+const TARGET = new Date("2026-05-03T00:00:00+02:00");
+
+function App(){
+  const [time,setTime]=React.useState(getTime());
+  const [unlocked,setUnlocked]=React.useState(false);
+  const [reveal,setReveal]=React.useState(false);
+  const [game,setGame]=React.useState(null);
+  const [shake,setShake]=React.useState(false);
+  const [open,setOpen]=React.useState(false);
+
+  function getTime(){
+    const diff=TARGET-new Date();
+    return {
+      d:Math.floor(diff/86400000),
+      h:Math.floor(diff/3600000)%24,
+      m:Math.floor(diff/60000)%60,
+      s:Math.floor(diff/1000)%60
+    };
+  }
+
+  React.useEffect(()=>{
+    const i=setInterval(()=>{
+      setTime(getTime());
+      if(new Date()>=TARGET){
+        setUnlocked(true);
+        setReveal(true);
+        setOpen(true);
+        setTimeout(()=>setReveal(false),6000);
+      }
+    },1000);
+    return()=>clearInterval(i);
+  },[]);
+
+  if(game==="heart") return <HeartGame back={()=>setGame(null)}/>
+  if(game==="pine") return <PineGame back={()=>setGame(null)}/>
+
+  if(reveal){
+    return(
+      <div className="reveal">
+        <div>
+          <h1>Happy Birthday Inathi 🎉</h1>
+          <p style={{maxWidth:"700px"}}>
+          Happy birthday Inathi 🎉<br/><br/>
+          I hope you’re having, or are going to have, an amazing day today...
+          <br/><br/>
+          I’ve noticed how consistent you’ve been with your running...
+          <br/><br/>
+          I admire you a lot, and you’re still as beautiful as ever.
+          <br/><br/>
+          Wishing you nothing but happiness and success ahead 🤍
+          </p>
+        </div>
+      </div>
+    );
+  }
+
+  if(unlocked){
+    return(
+      <div>
+        <h1>Happy Birthday Inathi 🎉</h1>
+        <div className="grid">
+          {Array.from({length:11},(_,i)=>(
+            <img key={i} src={"images/"+(i+1)+".jpg"}/>
+          ))}
+        </div>
+      </div>
+    );
+  }
+
+  return(
+    <div className="container">
+      <img src="images/her.jpg" className="side"/>
+
+      <div className="center">
+        <h1>Pineapple’s Special Day 🍍</h1>
+        <h2>{time.d}d {time.h}h {time.m}m {time.s}s</h2>
+
+        <div className={`envelope ${shake?"shake":""} ${open?"open":""}`}
+          onClick={()=>{
+            setShake(true);
+            setTimeout(()=>setShake(false),400);
+          }}>
+          Will open on Pineapple’s special day
+        </div>
+
+        <button onClick={()=>setGame("heart")}>❤️ Game</button>
+        <button onClick={()=>setGame("pine")}>🍍 Game</button>
+      </div>
+
+      <img src="images/pineapple.png" className="side"/>
+    </div>
+  );
+}
+
+/* ❤️ HEART GAME */
+function HeartGame({back}){
+  const [hearts,setHearts]=React.useState([]);
+  const [score,setScore]=React.useState(0);
+
+  React.useEffect(()=>{
+    const i=setInterval(()=>{
+      setHearts(h=>[...h,{id:Date.now(),x:Math.random()*90,y:Math.random()*90}]);
+    },800);
+    return()=>clearInterval(i);
+  },[]);
+
+  return(
+    <div>
+      <h1>❤️ Catch Love</h1>
+      <h2>{score}</h2>
+      {hearts.map(h=>(
+        <div key={h.id}
+          className="heart"
+          style={{left:h.x+"%",top:h.y+"%"}}
+          onClick={()=>{setScore(s=>s+1);setHearts(x=>x.filter(i=>i.id!==h.id));}}>
+          ❤️
+        </div>
+      ))}
+      <button onClick={back}>Back</button>
+    </div>
+  );
+}
+
+/* 🍍 PINEAPPLE GAME */
+function PineGame({back}){
+  const [items,setItems]=React.useState([]);
+  const [score,setScore]=React.useState(0);
+  const [x,setX]=React.useState(window.innerWidth/2);
+
+  React.useEffect(()=>{
+    const move=e=>setX(e.clientX);
+    window.addEventListener("mousemove",move);
+
+    const i=setInterval(()=>{
+      setItems(it=>[...it,{id:Date.now(),x:Math.random()*window.innerWidth,y:0}]);
+    },700);
+
+    const fall=setInterval(()=>{
+      setItems(it=>it.map(i=>({...i,y:i.y+5})));
+    },50);
+
+    return()=>{
+      window.removeEventListener("mousemove",move);
+      clearInterval(i);
+      clearInterval(fall);
+    };
+  },[]);
+
+  React.useEffect(()=>{
+    setItems(it=>it.filter(i=>{
+      if(i.y>window.innerHeight-60 && Math.abs(i.x-x)<50){
+        setScore(s=>s+1);
+        return false;
+      }
+      return i.y<window.innerHeight;
+    }));
+  },[items,x]);
+
+  return(
+    <div>
+      <h1>🍍 Catch Pineapples</h1>
+      <h2>{score}</h2>
+
+      {items.map(i=>(
+        <div key={i.id} className="pine"
+          style={{left:i.x,top:i.y}}>🍍</div>
+      ))}
+
+      <div className="bucket" style={{left:x}}>🧺</div>
+      <button onClick={back}>Back</button>
+    </div>
+  );
+}
+
+ReactDOM.createRoot(document.getElementById("root")).render(<App/>);
+</script>
+</body>
+</html>
